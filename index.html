@@ -105,7 +105,7 @@
                                 
                                 <form role="form">
                                     <div class="form-group">
-                                        <input type="text" class="form-control" ng-model="phonename" ng-keyup="filterPhones(phonename)" placeholder="Filter by phone name, e.g: iphone, samsung, galaxy, oneplus, etc">
+                                        <input type="text" class="form-control" ng-model="phonename" placeholder="Filter by phone name, e.g: iphone, samsung, galaxy, oneplus, etc">
                                     </div>
                                 </form>   
                                 
@@ -114,7 +114,7 @@
                                             <th>Handset Name</th>
                                             <th>Details</th>
                                         </tr>
-                                        <tr ng-repeat="handset in handsetDOM | orderBy:'handsetname'"">
+                                        <tr ng-repeat="handset in handsets | orderBy:'handsetname' | filter:phonename">
                                             <td>
                                                 <a href="#/phone-details/{{handset._id.$oid}}">{{handset.handsetname}}</a>
                                             </td>
@@ -246,19 +246,16 @@
                             redirectTo: '/404'
                         });                        
             }])
-            .controller('OpenPhonebaseController', ['$scope', '$resource', '$rootScope', 'PhoneFilterService', function($scope, $resource, $rootScope, phoneFilterService) {
+            .controller('OpenPhonebaseController', ['$scope', '$resource', '$rootScope', function($scope, $resource, $rootScope) {
                 $scope.visible = false;
 
                 $scope.title = "Open Phonebase";
-                
-                $scope.filterPhones = phoneName => $scope.handsetDOM = phoneFilterService.filterPhones($scope.handsets, phoneName);
-                               
+                                              
                 $resource('https://cors-container.jacob.uk.com/http://178.62.102.39:3009/openhandsetdata/handset-data/?limit=-100000')
                     .get()
                     .$promise
                     .then(data => {
                         $scope.handsets = data.rows;
-                        $scope.handsetDOM = data.rows;
                         $scope.handsetCount = data.rows.length
                         $scope.visible = true;
                     });
@@ -269,9 +266,7 @@
                 $scope.title = "Open Phonebase - Phone Details";
 
                 $scope.phoneId = $routeParams.phoneId;
-                
-                $scope.filterPhones = phoneName => $scope.handsetDOM = phoneFilterService.filterPhones($scope.handsets, phoneName);
-                               
+
                 $resource('https://cors-container.jacob.uk.com/http://178.62.102.39:3009/openhandsetdata/handset-data/?limit=-100000')
                     .get()
                     .$promise
@@ -282,16 +277,7 @@
                         });
                     });
                     
-            }])
-            .factory('PhoneFilterService', function(){
-                return {
-                    filterPhones: (phoneData, phoneName) => 
-                        phoneData.filter(phone => 
-                            phone.handsetname.toLowerCase().indexOf(
-                                phoneName.toLowerCase()
-                            ) > -1)
-                }
-            });
+            }]);
     </script>
     
     <script type="text/javascript">
