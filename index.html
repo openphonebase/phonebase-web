@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="OpenPhonebase">
+<head>
+    <meta charset="UTF-8">
+    <title>Open Phonebase</title>
+    
+    <meta name="description" content="Open Phonebase is a crowd-sourced open data project which aims to catalog phones and their specifications in the wild.">
+    <meta name="keywords" cotent="phone, specs, specification, phone data, open, phone, base, database">
+    <meta name="author" cntnt="Open Phonebase">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <style>
+        [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+            display: none !important;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    
+    <script src="https://code.jquery.com/jquery-1.12.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-resource.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-route.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+</head>
+<body ng-cloak class="ng-cloak">
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                
+                <a class="navbar-brand" href="#">Open Phonebase</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="#/">Home</a></li>
+                    <li><a href="#/contribute">Contribute</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="panel panel-default container">
+        <div class="panel-body">
+            <p>Open Phonebase is a crowd-sourced open data project which aims to catalog phones and their specifications in the wild. Collected data is avaiable as both open APIs and downloadable archives.</p>  
+            
+            <hr/>
+            
+            <p><strong>Get involved</strong></p>
+            <p>Help to create the most open catalog of phone information by contributing, moderating and ensuring information on Open Phonebase is correct and up to date! <a href="#/contribute">Find out more</a>.</p>
+        </div>
+    </div>
+        
+    
+    <main ng-view class="container"></main>
+    
+    <hr/>
+    
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <p><a href="https://www.openphonebase.com">Open Phonebase</a> v0.0.1</p>
+                                
+                <hr />
+                
+                <p>
+                    <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons Licence" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Dataset" property="dct:title" rel="dct:type">Open Phonebase</span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.<br />Based on a work at <a xmlns:dct="http://purl.org/dc/terms/" href="https://www.openphonebase.com" rel="dct:source">https://www.openphonebase.com</a>.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    
+    <footer>
+        <div class="row">
+            <div style="text-align:center;">
+                
+            </div>
+        </div>
+        
+    </footer>
+    
+    <script>
+        var phoneBase = angular
+            .module('OpenPhonebase', ['ngResource', 'ngRoute'])
+            .config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+                    $routeProvider.
+                        when('/', {
+                            template: `
+                            <div ng-hide="visible">
+                                <p>Hang tight, loading phone catalog...</p>
+                            </div>
+                            
+                            <div ng-show="visible">                         
+                                <p>We currently have {{handsetCount}} phones listed, search for yours: </p>
+                                
+                                <form role="form">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" ng-model="phonename" ng-keyup="filterPhones(phonename)" placeholder="Filter by phone name, e.g: iphone, samsung, galaxy, oneplus, etc">
+                                    </div>
+                                </form>   
+                                
+                                <table class="table table-hover">
+                                        <tr>
+                                            <th>Handset Name</th>
+                                            <th>Details</th>
+                                        </tr>
+                                        <tr ng-repeat="handset in handsetDOM | orderBy:'handsetname'"">
+                                            <td>
+                                                <a href="#/phone-details/{{handset._id.$oid}}">{{handset.handsetname}}</a>
+                                            </td>
+                                            <td>
+                                                Status: {{handset['status']}}
+                                            </td>
+                                        </tr>
+                                    </div>
+                                </table>
+                            </div>`,
+                            controller: 'OpenPhonebaseController'
+                        }).
+                        when('/phone-details/:phoneId', {
+                            template: `
+                                <div ng-hide="visible">
+                                    <p>Hang tight, loading phone data...</p>
+                                </div>
+                                
+                                <div ng-show="visible">                                    
+                                    <h3>{{phone[0].handsetname}}</h3>
+                                    
+                                    <table class="table table-hover">
+                                        <tr>
+                                            <td>Phone name</td>
+                                            <td>{{phone[0].handsetname}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>Announced</td>
+                                            <td>{{phone[0]['announced']}}. Status: {{phone[0]['status']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>Connectivity</td>
+                                            <td>{{phone[0].technology}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>2G Bands</td>
+                                            <td>{{phone[0]['2gbands']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>3G Bands</td>
+                                            <td>{{phone[0]['3gbands']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>Size</td>
+                                            <td>{{phone[0].size}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>Weight</td>
+                                            <td>{{phone[0].weight}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>Screen</td>
+                                            <td>{{phone[0]['resolution']}} {{phone[0]['type']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>CPU</td>
+                                            <td>{{phone[0]['cpu']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>GPU</td>
+                                            <td>{{phone[0]['gpu']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>Internal Memory</td>
+                                            <td>{{phone[0]['internal']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>WLAN</td>
+                                            <td>{{phone[0]['wlan']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>Bluetooth</td>
+                                            <td>{{phone[0]['bluetooth']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>USB</td>
+                                            <td>{{phone[0]['usb']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>OS</td>
+                                            <td>{{phone[0]['os']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>Talk time</td>
+                                            <td>{{phone[0]['talktime']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>NFC</td>
+                                            <td>{{phone[0]['nfc']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>Sensors</td>
+                                            <td>{{phone[0]['sensors']}}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>Messaging</td>
+                                            <td>{{phone[0]['messaging']}}</td>
+                                        </tr>                                        
+                                    </table>                                   
+                                </div>`,
+                            controller: 'PhoneDetailsController'
+                        }).
+                        when('/404', {
+                            template: `
+                            <div>                         
+                                <p>Sorry, the page you were looking for could not be found.</p>
+                            </div>`,
+                            controller: 'OpenPhonebaseController'
+                        }).
+                        otherwise({
+                            redirectTo: '/404'
+                        });                        
+            }])
+            .controller('OpenPhonebaseController', ['$scope', '$resource', '$rootScope', 'PhoneFilterService', function($scope, $resource, $rootScope, phoneFilterService) {
+                $scope.visible = false;
+
+                $scope.title = "Open Phonebase";
+                
+                $scope.filterPhones = phoneName => $scope.handsetDOM = phoneFilterService.filterPhones($scope.handsets, phoneName);
+                               
+                $resource('https://cors-container.jacob.uk.com/http://178.62.102.39:3009/openhandsetdata/handset-data/?limit=-100000')
+                    .get()
+                    .$promise
+                    .then(data => {
+                        $scope.handsets = data.rows;
+                        $scope.handsetDOM = data.rows;
+                        $scope.handsetCount = data.rows.length
+                        $scope.visible = true;
+                    });
+            }])
+            .controller('PhoneDetailsController', ['$scope', '$resource', '$routeParams', function($scope, $resource, $routeParams) {
+                $scope.visible = false;
+                
+                $scope.title = "Open Phonebase - Phone Details";
+
+                $scope.phoneId = $routeParams.phoneId;
+                
+                $scope.filterPhones = phoneName => $scope.handsetDOM = phoneFilterService.filterPhones($scope.handsets, phoneName);
+                               
+                $resource('https://cors-container.jacob.uk.com/http://178.62.102.39:3009/openhandsetdata/handset-data/?limit=-100000')
+                    .get()
+                    .$promise
+                    .then(data => {
+                        $scope.phone = data.rows.filter(function(phone){
+                            $scope.visible = true;
+                            return phone['_id']['$oid'] === $routeParams.phoneId;
+                        });
+                    });
+                    
+            }])
+            .factory('PhoneFilterService', function(){
+                return {
+                    filterPhones: (phoneData, phoneName) => 
+                        phoneData.filter(phone => 
+                            phone.handsetname.toLowerCase().indexOf(
+                                phoneName.toLowerCase()
+                            ) > -1)
+                }
+            });
+    </script>
+    
+    <script type="text/javascript">
+        var _gauges = _gauges || [];
+        (function() {
+        var t   = document.createElement('script');
+        t.type  = 'text/javascript';
+        t.async = true;
+        t.id    = 'gauges-tracker';
+        t.setAttribute('data-site-id', '56e04ec0c88d903d840047e4');
+        t.setAttribute('data-track-path', 'https://track.gaug.es/track.gif');
+        t.src = 'https://d36ee2fcip1434.cloudfront.net/track.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(t, s);
+        })();
+    </script>
+</body>
+</html>
